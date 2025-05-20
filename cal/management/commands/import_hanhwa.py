@@ -8,6 +8,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # CSV 파일 경로 적절히 수정하기 (manage.py가 있는 경로 기준)
+        Game.objects.filter(home_team='한화').delete()
         csv_file_path = 'data/kbo_schedule.csv'
 
         with open(csv_file_path, newline='', encoding='utf-8-sig') as csvfile:
@@ -16,6 +17,7 @@ class Command(BaseCommand):
             for row in reader:
                 # team 컬럼에 '한화'만 필터링
                 if row['team'] == '한화':
+                 
                     # 날짜 문자열을 datetime.date 객체로 변환
                     game_date = datetime.strptime(row['day'], '%Y-%m-%d').date()
 

@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta # 날짜와 시간 처리를 위한 모듈
+from datetime import datetime, timedelta, date # 날짜와 시간 처리를 위한 모듈
 from calendar import HTMLCalendar # 모듈에서 제공하는 html 형식의 캘린더를 생성하는 클래스
 from .models import Game # 현재 모델에서 불러온 클래스 
 import os
 import django
 import sys
+
 
 # calemdar 클래스는 __init__, formatday, formatweek, formatmonth 네 가지의 내장 함수를 가짐짐
 class Calendar(HTMLCalendar): # calemdar 클래스는 htmlcalendar를 상속받아 특정 연도와 월을 받아 캘린더를 생성하도록함
@@ -12,16 +13,39 @@ class Calendar(HTMLCalendar): # calemdar 클래스는 htmlcalendar를 상속받�
         self.month = month
         super(Calendar, self).__init__()
     
-    def formatday(self, day, games): # day 현재 날짜, contents : 현재 달의 모든 일정 데이터 
-        games_per_day = games.filter(date__day = day) # 현재 날짜에 해당하는 일정만 필터링링
+    def formatday(self, day, games):
+        
+
+        if day == 0:
+            return '<td></td>'
+        games_per_day = games.filter(date__day=day)
         d = ''
-        for game in games_per_day: # 필터링된 일정들을 event로 순회하면서 html 리스트 아이템(li)로 만들어서 d에 추가 
-            d += f'<li> {game.away_team} vs {game.home_team} at {game.stadium} </li> ' 
-        # 필터링한 game 모델의 데이터를 games라는 인자로 받아서 해당 날짜에 대한 game 일정을 출력함함
-        if day != 0:
-            return f"<td><span class='date'>{day}</span><ul> {d} </ul></td>"
-        return '<td></td>'
-    
+        today = date.today()
+        
+        for game in games_per_day:
+            # 경기 날짜
+            
+            
+            game_date = game.date
+            print(f'[DEBUG] game.result="{game.result}"')
+            
+            # 경기 결과가 '예정'인지 체크
+            if game.result == '-':
+                if game_date < today:
+                    # 지난 날인데 결과가 예정 → 노트(예: 우천취소) 보여주기
+                    
+                 
+                    print(f'[DEBUG] Past game with 예정, note: {game.note}')
+                    d += f'<li>{game.away_team} - {game.note}</li>'
+                else:
+                    # 미래 경기 → 상대팀만 
+                    print(f'[DEBUG] Future game 예정')
+                    d += f'<li>{game.away_team}</li>'
+            else:
+                # 결과가 예정이 아니면 (승, 패 등) 결과 보여주기
+                d += f'<li>{game.away_team} - {game.result}</li>'
+        
+        return f"<td><span class='date'>{day}</span><ul>{d}</ul></td>"
     # 달력에서 주를 형식화하는 함수로, theweek와 contents를 인자로 받아 각 날짜에 대해 formatday 함수를 호출하여 출력함
     def formatweek(self, theweek, games):
         week = ''
