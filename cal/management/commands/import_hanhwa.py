@@ -17,15 +17,18 @@ class Command(BaseCommand):
                 # team 컬럼에 '한화'만 필터링
                 if row['team'] == '한화':
                     # 날짜 문자열을 datetime.date 객체로 변환
-                    game_date = datetime.strptime(row['day'], '%Y.%m.%d').date()
+                    game_date = datetime.strptime(row['day'], '%Y-%m-%d').date()
 
                     # Game 객체 생성 - 필드 이름과 타입은 너의 models.py에 맞게 변경
                     game = Game(
                         date=game_date,
-                        
+                        home_team = row ['team'],
                         away_team=row['opponent'],
                         stadium=row['stadium'],
                         time=row['time'],  # 시간 형식이 맞는지 확인 필요
+                        play = row['play'],
+                        note = row['note'],
+                        result = row['result']
                     )
                     game.save()
                     count += 1
